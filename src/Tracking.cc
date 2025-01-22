@@ -18,7 +18,6 @@
 
 
 #include "Tracking.h"
-
 #include "ORBmatcher.h"
 #include "FrameDrawer.h"
 #include "Converter.h"
@@ -1610,7 +1609,6 @@ Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &times
 
     lastID = mCurrentFrame.mnId;
     Track();
-
     return mCurrentFrame.GetPose();
 }
 
@@ -3002,7 +3000,8 @@ bool Tracking::TrackLocalMap()
         }
 
     mnMatchesInliers = 0;
-
+    LocalSaveClass& lsave =  LocalSaveClass::getInstance();
+    lsave.reset();
     // Update MapPoints Statistics
     for(int i=0; i<mCurrentFrame.N; i++)
     {
@@ -3011,10 +3010,22 @@ bool Tracking::TrackLocalMap()
             if(!mCurrentFrame.mvbOutlier[i])
             {
                 mCurrentFrame.mvpMapPoints[i]->IncreaseFound();
+                /*    from frame: // In the RGB-D case, RGB images can be distorted.
+    std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
+    std::vector<cv::KeyPoint> mvKeysUn;
+
+    // Corresponding stereo coordinate and depth for each keypoint.
+    std::vector<MapPoint*> mvpMapPoints;*/
+                lsave.add2dKeyPoint(mCurrentFrame.mvKeys[i].pt.x, mCurrentFrame.mvKeys[i].pt.y);
+                Eigen::Vector3f worldPos = mCurrentFrame.mvpMapPoints[i]->GetWorldPos();
+
+                lsave.add3dKeyPoint( mCurrentFrame.mvpMapPoints[i]->mTrackProjX, mCurrentFrame.mvpMapPoints[i]->mTrackProjY, mCurrentFrame.mvpMapPoints[i]->mTrackDepth);
+                lsave.add3dKeyPointWorld( worldPos.x(), worldPos.y(), worldPos.z());  
                 if(!mbOnlyTracking)
                 {
                     if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
                         mnMatchesInliers++;
+                        
                 }
                 else
                     mnMatchesInliers++;

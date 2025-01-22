@@ -27,7 +27,7 @@
 #include<string>
 #include<thread>
 #include<opencv2/core/core.hpp>
-
+#include <unistd.h>
 #include "Tracking.h"
 #include "FrameDrawer.h"
 #include "MapDrawer.h"
@@ -39,7 +39,7 @@
 #include "Viewer.h"
 #include "ImuTypes.h"
 #include "Settings.h"
-
+#include "LocalSaveClass.h"
 
 namespace ORB_SLAM3
 {
@@ -141,7 +141,7 @@ public:
     bool isShutDown();
 
     std::vector<Eigen::Matrix4f> GetCameraTrajectory();
-
+    
     // Save camera trajectory in the TUM RGB-D dataset format.
     // Only for stereo and RGB-D. This method does not work for monocular.
     // Call first Shutdown()
@@ -193,7 +193,9 @@ public:
     void InsertResizeTime(double& time);
     void InsertTrackTime(double& time);
 #endif
-
+// Map structure that stores the pointers to all KeyFrames and MapPoints.
+    //Map* mpMap;
+    Atlas* mpAtlas;
 private:
 
     void SaveAtlas(int type);
@@ -210,9 +212,7 @@ private:
     // KeyFrame database for place recognition (relocalization and loop detection).
     KeyFrameDatabase* mpKeyFrameDatabase;
 
-    // Map structure that stores the pointers to all KeyFrames and MapPoints.
-    //Map* mpMap;
-    Atlas* mpAtlas;
+    
 
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints and
@@ -265,6 +265,8 @@ private:
 
     Settings* settings_;
 };
+
+
 
 }// namespace ORB_SLAM
 
